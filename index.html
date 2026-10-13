@@ -1,0 +1,629 @@
+사이트 이름 **‘오늘의 운세는?’**을 적용한 전체 코드입니다.
+
+아래 코드를 복사해 **`index.html`**로 저장한 뒤, Chrome이나 Edge에서 열면 됩니다. 별도 설치 없이 실행됩니다.
+
+```html
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>오늘의 운세는? — 오늘의 운세</title>
+
+  <style>
+    :root {
+      --primary: #7655d6;
+      --background: #f6f4fc;
+      --text: #28243b;
+      --muted: #746f85;
+    }
+
+    * {
+      box-sizing: border-box;
+    }
+
+    [hidden] {
+      display: none !important;
+    }
+
+    body {
+      margin: 0;
+      background: var(--background);
+      color: var(--text);
+      font-family: system-ui, "Noto Sans KR", sans-serif;
+      line-height: 1.6;
+    }
+
+    .container {
+      max-width: 960px;
+      margin: auto;
+      padding: 24px;
+    }
+
+    header {
+      padding: 12px 0 24px;
+      border-bottom: 1px solid #e4def1;
+    }
+
+    .logo {
+      margin: 0;
+      color: var(--primary);
+      font-size: 28px;
+    }
+
+    .hero {
+      margin: 32px 0;
+    }
+
+    .hero h2 {
+      margin-bottom: 8px;
+    }
+
+    .muted {
+      color: var(--muted);
+    }
+
+    .layout {
+      display: grid;
+      grid-template-columns: 300px 1fr;
+      gap: 24px;
+      align-items: start;
+    }
+
+    .panel {
+      padding: 24px;
+      background: white;
+      border: 1px solid #ebe6f5;
+      border-radius: 20px;
+      box-shadow: 0 8px 24px #34205b08;
+    }
+
+    .panel h3 {
+      margin-top: 0;
+    }
+
+    .field-label {
+      display: block;
+      margin: 16px 0 6px;
+      font-weight: 600;
+    }
+
+    input[type="text"],
+    input[type="date"] {
+      width: 100%;
+      min-width: 0;
+      padding: 12px;
+      border: 1px solid #ddd6eb;
+      border-radius: 10px;
+      background: #fcfbff;
+      font: inherit;
+    }
+
+    input:focus-visible,
+    button:focus-visible {
+      outline: 3px solid #c9b8f6;
+      outline-offset: 3px;
+    }
+
+    .checkbox {
+      display: flex;
+      gap: 8px;
+      align-items: flex-start;
+      margin: 18px 0;
+      font-size: 13px;
+    }
+
+    .checkbox input {
+      margin-top: 5px;
+      accent-color: var(--primary);
+    }
+
+    button {
+      padding: 12px 16px;
+      border: none;
+      border-radius: 10px;
+      background: var(--primary);
+      color: white;
+      font: inherit;
+      font-weight: 600;
+      cursor: pointer;
+    }
+
+    .submit {
+      width: 100%;
+    }
+
+    .secondary {
+      margin-top: 12px;
+      background: #eee8fb;
+      color: #6242b0;
+    }
+
+    .small {
+      font-size: 12px;
+    }
+
+    .notice {
+      color: #a33c50;
+    }
+
+    .empty {
+      padding: 60px 12px;
+      text-align: center;
+    }
+
+    .score {
+      margin: 8px 0;
+      color: var(--primary);
+      font-size: 56px;
+      font-weight: 800;
+    }
+
+    .grid {
+      display: grid;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      gap: 12px;
+      margin-top: 20px;
+    }
+
+    .fortune-card {
+      padding: 16px;
+      border-radius: 14px;
+      background: #f8f6fd;
+    }
+
+    .fortune-card h4 {
+      margin: 0 0 8px;
+    }
+
+    .fortune-card p {
+      margin-bottom: 0;
+      font-size: 14px;
+    }
+
+    .luck {
+      margin-top: 20px;
+      padding: 16px;
+      border-radius: 12px;
+      background: #edf7f1;
+    }
+
+    footer {
+      margin-top: 32px;
+      text-align: center;
+      font-size: 12px;
+      color: var(--muted);
+    }
+
+    @media (max-width: 700px) {
+      .layout {
+        grid-template-columns: 1fr;
+      }
+
+      .container {
+        padding: 16px;
+      }
+    }
+
+    @media (max-width: 380px) {
+      .grid {
+        grid-template-columns: 1fr;
+      }
+    }
+  </style>
+</head>
+
+<body>
+  <div class="container">
+    <header>
+      <h1 class="logo">✦ 오늘의 운세는?</h1>
+    </header>
+
+    <section class="hero">
+      <h2>오늘, 어떤 행운이 기다릴까요?</h2>
+      <p class="muted">
+        생년월일로 만나는 오늘의 작은 운세
+      </p>
+    </section>
+
+    <main class="layout">
+      <!-- 입력 영역 -->
+      <section class="panel">
+        <h3>나의 운세 확인하기</h3>
+
+        <form id="fortune-form">
+          <label class="field-label" for="nickname">
+            닉네임
+          </label>
+          <input
+            id="nickname"
+            type="text"
+            placeholder="어떻게 불러드릴까요?"
+            maxlength="20"
+            required
+          >
+
+          <label class="field-label" for="birthday">
+            생년월일
+          </label>
+          <input
+            id="birthday"
+            type="date"
+            min="1900-01-01"
+            required
+          >
+
+          <label class="checkbox">
+            <input id="remember" type="checkbox">
+            <span>
+              이 브라우저에 입력 정보 저장
+              <br>
+              <span class="muted">
+                공용 기기에서는 선택하지 마세요.
+              </span>
+            </span>
+          </label>
+
+          <button class="submit" type="submit">
+            오늘의 운세 보기 ✨
+          </button>
+        </form>
+
+        <button id="delete-data" class="secondary" type="button">
+          저장 정보 · 화면 초기화
+        </button>
+
+        <p id="notice" class="notice small" role="status"></p>
+
+        <p class="muted small">
+          입력 정보는 서버로 전송하지 않습니다.
+          저장을 선택하면 이 브라우저에 암호화 없이 보관됩니다.
+        </p>
+      </section>
+
+      <!-- 결과 영역 -->
+      <section class="panel">
+        <div id="empty" class="empty">
+          <div style="font-size: 52px" aria-hidden="true">🔮</div>
+          <h3>오늘의 운세가 기다리고 있어요</h3>
+          <p class="muted">
+            닉네임과 생년월일을 입력해 주세요.
+          </p>
+        </div>
+
+        <div id="result" hidden>
+          <p id="result-date" class="muted small"></p>
+          <h3 id="result-title"></h3>
+
+          <div id="total-score" class="score"></div>
+          <p id="total-message"></p>
+
+          <div id="fortune-grid" class="grid"></div>
+          <div id="lucky-info" class="luck"></div>
+
+          <button id="copy-result" class="secondary" type="button">
+            운세 결과 복사
+          </button>
+
+          <p id="copy-status" class="small" role="status"></p>
+        </div>
+      </section>
+    </main>
+
+    <footer>
+      재미로 즐기는 운세입니다.
+      의료·투자 등 중요한 판단의 근거로 사용하지 마세요.
+      날짜는 한국 시간 기준입니다.
+    </footer>
+  </div>
+
+  <script>
+    "use strict";
+
+    const STORAGE_KEY = "haruun.profile.v1";
+    const $ = id => document.getElementById(id);
+
+    let activeProfile = null;
+    let renderedDay = "";
+    let shareText = "";
+
+    // 한국 시간 기준 오늘 날짜
+    function getToday() {
+      const parts = new Intl.DateTimeFormat("en-US", {
+        timeZone: "Asia/Seoul",
+        year: "numeric",
+        month: "2-digit",
+        day: "2-digit"
+      }).formatToParts(new Date());
+
+      const value = type =>
+        parts.find(part => part.type === type).value;
+
+      return `${value("year")}-${value("month")}-${value("day")}`;
+    }
+
+    // 같은 입력은 항상 같은 숫자로 변환
+    function hash(text) {
+      let value = 2166136261;
+
+      for (let i = 0; i < text.length; i++) {
+        value ^= text.charCodeAt(i);
+        value = Math.imul(value, 16777619);
+      }
+
+      return value >>> 0;
+    }
+
+    // 생년월일 검증
+    function isValidBirthday(value) {
+      if (!/^\d{4}-\d{2}-\d{2}$/.test(value)) return false;
+      if (value < "1900-01-01" || value > getToday()) return false;
+
+      const date = new Date(`${value}T00:00:00Z`);
+
+      return !Number.isNaN(date.getTime()) &&
+        date.toISOString().slice(0, 10) === value;
+    }
+
+    const categories = [
+      {
+        title: "💗 애정운",
+        messages: [
+          "상대의 말을 차분하게 들어보세요. 서두르지 않아도 괜찮아요.",
+          "가벼운 안부 인사가 관계를 더 따뜻하게 만들 수 있어요.",
+          "마음을 표현하기 좋은 날이에요. 작은 진심을 전해보세요."
+        ]
+      },
+      {
+        title: "💰 금전운",
+        messages: [
+          "충동구매는 잠시 미루고 꼭 필요한 지출인지 확인해 보세요.",
+          "작은 지출을 정리하면 마음까지 가벼워질 수 있어요.",
+          "계획적인 소비와 저축 목표를 점검하기 좋은 날이에요."
+        ]
+      },
+      {
+        title: "📚 일·학업운",
+        messages: [
+          "할 일을 작게 나누고 한 가지씩 마무리해 보세요.",
+          "꾸준함이 도움이 되는 날이에요. 짧게라도 집중해 보세요.",
+          "미뤄둔 일을 시작해 보세요. 작은 성취가 자신감을 줄 거예요."
+        ]
+      },
+      {
+        title: "🌿 컨디션",
+        messages: [
+          "무리하지 말고 쉬는 시간을 챙겨보세요.",
+          "가벼운 스트레칭과 규칙적인 휴식을 챙겨보세요.",
+          "몸 상태에 맞춰 가볍게 움직이며 하루를 시작해 보세요."
+        ]
+      }
+    ];
+
+    // 운세 생성 및 화면 표시
+    function renderFortune(profile) {
+      const today = getToday();
+      const seed = `${profile.birthday}|${today}`;
+      const scores = [];
+      const lines = [];
+
+      $("fortune-grid").replaceChildren();
+
+      categories.forEach(category => {
+        const score = 50 + hash(`${seed}|${category.title}`) % 46;
+        const level = score >= 80 ? 2 : score >= 65 ? 1 : 0;
+        const message = category.messages[level];
+
+        scores.push(score);
+        lines.push(`${category.title}: ${score}점\n${message}`);
+
+        const card = document.createElement("article");
+        card.className = "fortune-card";
+
+        const heading = document.createElement("h4");
+        heading.textContent = `${category.title} · ${score}점`;
+
+        const paragraph = document.createElement("p");
+        paragraph.textContent = message;
+
+        card.append(heading, paragraph);
+        $("fortune-grid").append(card);
+      });
+
+      const total = Math.round(
+        scores.reduce((sum, score) => sum + score, 0) / scores.length
+      );
+
+      const totalMessage = total >= 80
+        ? "작은 기회를 발견해 보세요. 새로운 시도를 응원하는 하루예요."
+        : total >= 65
+        ? "평소의 리듬을 지키며 차근차근 나아가 보세요."
+        : "속도를 조금 늦추고 자신을 챙기는 하루로 만들어 보세요.";
+
+      const colors = [
+        "보라색", "하늘색", "초록색", "분홍색", "노란색"
+      ];
+
+      const items = [
+        "작은 메모장", "손수건", "좋아하는 책", "텀블러", "펜"
+      ];
+
+      const color = colors[hash(`${seed}|color`) % colors.length];
+      const item = items[hash(`${seed}|item`) % items.length];
+      const number = 1 + hash(`${seed}|number`) % 9;
+
+      const luckyText =
+        `🍀 행운의 색: ${color} · 숫자: ${number} · 아이템: ${item}`;
+
+      $("result-date").textContent = `${today} · 한국 시간 기준`;
+      $("result-title").textContent = `${profile.nickname}님의 오늘의 운세`;
+      $("total-score").textContent = `${total}점`;
+      $("total-message").textContent = totalMessage;
+      $("lucky-info").textContent = luckyText;
+      $("copy-status").textContent = "";
+
+      $("empty").hidden = true;
+      $("result").hidden = false;
+
+      // 복사 문구에는 닉네임과 생년월일을 포함하지 않음
+      shareText = [
+        `✦ 오늘의 운세는? | ${today}`,
+        `오늘의 종합 운세: ${total}점`,
+        totalMessage,
+        "",
+        ...lines,
+        "",
+        luckyText,
+        "",
+        "재미용 운세입니다."
+      ].join("\n");
+
+      renderedDay = today;
+    }
+
+    // 운세 조회
+    $("fortune-form").addEventListener("submit", event => {
+      event.preventDefault();
+      $("notice").textContent = "";
+
+      const nickname = $("nickname").value.trim();
+      const birthday = $("birthday").value;
+
+      if (!nickname || nickname.length > 20) {
+        $("notice").textContent = "닉네임을 1~20자로 입력해 주세요.";
+        return;
+      }
+
+      if (!isValidBirthday(birthday)) {
+        $("notice").textContent =
+          "1900년 이후부터 오늘까지의 올바른 생년월일을 입력해 주세요.";
+        return;
+      }
+
+      activeProfile = { nickname, birthday };
+
+      try {
+        if ($("remember").checked) {
+          localStorage.setItem(
+            STORAGE_KEY,
+            JSON.stringify(activeProfile)
+          );
+        } else {
+          localStorage.removeItem(STORAGE_KEY);
+        }
+      } catch {
+        $("notice").textContent =
+          "브라우저 저장 기능을 사용할 수 없습니다. 운세는 확인할 수 있어요.";
+      }
+
+      renderFortune(activeProfile);
+    });
+
+    // 저장 선택 해제 시 기존 정보 삭제
+    $("remember").addEventListener("change", () => {
+      if ($("remember").checked) return;
+
+      try {
+        localStorage.removeItem(STORAGE_KEY);
+        $("notice").textContent = "브라우저에 저장된 정보를 삭제했습니다.";
+      } catch {
+        $("notice").textContent =
+          "저장 정보를 삭제하지 못했습니다. 브라우저 설정을 확인해 주세요.";
+      }
+    });
+
+    // 저장 정보 및 화면 초기화
+    $("delete-data").addEventListener("click", () => {
+      let deleted = true;
+
+      try {
+        localStorage.removeItem(STORAGE_KEY);
+      } catch {
+        deleted = false;
+      }
+
+      $("fortune-form").reset();
+      $("result").hidden = true;
+      $("empty").hidden = false;
+      $("fortune-grid").replaceChildren();
+
+      [
+        "result-title",
+        "result-date",
+        "total-score",
+        "total-message",
+        "lucky-info",
+        "copy-status"
+      ].forEach(id => {
+        $(id).textContent = "";
+      });
+
+      activeProfile = null;
+      renderedDay = "";
+      shareText = "";
+
+      $("notice").textContent = deleted
+        ? "저장 정보와 화면을 초기화했습니다."
+        : "화면은 초기화했지만 저장 정보는 삭제하지 못했습니다.";
+    });
+
+    // 결과 복사
+    $("copy-result").addEventListener("click", async () => {
+      if (!shareText) return;
+
+      try {
+        await navigator.clipboard.writeText(shareText);
+        $("copy-status").textContent = "운세 결과를 복사했습니다.";
+      } catch {
+        window.prompt(
+          "아래 문구를 선택해 복사해 주세요.",
+          shareText
+        );
+
+        $("copy-status").textContent =
+          "자동 복사가 지원되지 않아 복사용 창을 열었습니다.";
+      }
+    });
+
+    // 이전에 저장한 정보 불러오기
+    try {
+      const saved = JSON.parse(localStorage.getItem(STORAGE_KEY));
+
+      if (
+        saved &&
+        typeof saved.nickname === "string" &&
+        saved.nickname.trim().length > 0 &&
+        saved.nickname.length <= 20 &&
+        typeof saved.birthday === "string" &&
+        isValidBirthday(saved.birthday)
+      ) {
+        $("nickname").value = saved.nickname;
+        $("birthday").value = saved.birthday;
+        $("remember").checked = true;
+      }
+    } catch {
+      // 저장 기능이 제한되어도 운세 조회는 가능
+    }
+
+    // 날짜가 바뀌면 현재 결과 갱신
+    function refreshDay() {
+      const today = getToday();
+      $("birthday").max = today;
+
+      if (activeProfile && renderedDay !== today) {
+        renderFortune(activeProfile);
+      }
+    }
+
+    refreshDay();
+    setInterval(refreshDay, 30000);
+
+    document.addEventListener("visibilitychange", () => {
+      if (!document.hidden) refreshDay();
+    });
+  </script>
+</body>
+</html>
+```
+
+**참고:** 생년월일과 한국 기준 날짜로 결과를 만드는 **재미용 시제품**입니다. 실제 사주 계산·본인인증·회원가입 기능은 없습니다.
